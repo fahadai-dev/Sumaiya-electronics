@@ -1,0 +1,26 @@
+{
+  "name": "TechZone Electronics Shop Manager",
+  "short_name": "TechZone",
+  "description": "ইলেকট্রনিক্স দোকান ম্যানেজমেন্ট সিস্টেম",
+  "start_url": "./login.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#04070f",
+  "theme_color": "#04070f",
+  "lang": "bn",
+  "icons": [
+    {
+      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'%3E%3Crect width='192' height='192' fill='%2304070f'/%3E%3Ctext x='96' y='128' font-size='100' text-anchor='middle' fill='%2300d4ff'%3E%E2%AC%A1%3C/text%3E%3C/svg%3E",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' fill='%2304070f'/%3E%3Ctext x='256' y='340' font-size='260' text-anchor='middle' fill='%2300d4ff'%3E%E2%AC%A1%3C/text%3E%3C/svg%3E",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}

@@ -1,0 +1,95 @@
+
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TechZone — লগইন</title>
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@600;700&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#04070f;--bg2:#070d1a;--bg3:#0c1526;--border:#162035;--border2:#1e2e4a;
+  --text:#d6e4ff;--text2:#6b88b5;--text3:#334d78;--cyan:#00d4ff;--cyan-dim:#00d4ff18;--cyan-glow:#00d4ff33;--red:#ff3355;--red-dim:#ff335520}
+html,body{height:100%;background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;display:flex;align-items:center;justify-content:center}
+body::before{content:'';position:fixed;inset:0;pointer-events:none;
+  background-image:linear-gradient(var(--border) 1px,transparent 1px),linear-gradient(90deg,var(--border) 1px,transparent 1px);
+  background-size:40px 40px;mask-image:radial-gradient(ellipse 80% 80% at 50% 50%,#000 20%,transparent 100%);opacity:.4}
+.login-box{background:var(--bg2);border:1px solid var(--border2);border-radius:14px;padding:36px 30px;width:100%;max-width:360px;position:relative;z-index:1;box-shadow:0 20px 60px #000a}
+.login-box::before{content:'';position:absolute;top:0;left:15%;right:15%;height:1px;background:linear-gradient(90deg,transparent,var(--cyan),transparent);box-shadow:0 0 12px var(--cyan)}
+.logo{text-align:center;margin-bottom:6px}
+.logo-title{font-family:'Rajdhani',sans-serif;font-weight:700;font-size:26px;letter-spacing:.5px}
+.logo-title span{color:var(--cyan);text-shadow:0 0 15px var(--cyan)}
+.logo-sub{text-align:center;font-size:10px;color:var(--text3);letter-spacing:2px;margin-bottom:28px;font-family:'Share Tech Mono',monospace}
+.form-group{margin-bottom:14px}
+label{display:block;font-size:10px;color:var(--text3);font-weight:600;margin-bottom:5px;text-transform:uppercase;letter-spacing:1px}
+input{width:100%;background:var(--bg3);border:1px solid var(--border2);border-radius:8px;padding:11px 13px;color:var(--text);font-size:14px;outline:none;transition:.15s}
+input:focus{border-color:var(--cyan-glow);box-shadow:0 0 0 3px var(--cyan-dim)}
+.login-btn{width:100%;padding:12px;border-radius:8px;background:linear-gradient(135deg,var(--cyan),#0099bb);color:#04070f;border:none;font-weight:700;font-size:14px;cursor:pointer;margin-top:8px;transition:.15s}
+.login-btn:hover{opacity:.9}
+.login-btn:disabled{opacity:.5;cursor:not-allowed}
+.error-msg{background:var(--red-dim);border:1px solid #ff335540;color:var(--red);padding:9px 12px;border-radius:8px;font-size:12px;margin-bottom:14px;display:none}
+.footer-note{text-align:center;font-size:10px;color:var(--text3);margin-top:20px;font-family:'Share Tech Mono',monospace}
+</style>
+</head>
+<body>
+<div class="login-box">
+  <div class="logo"><div class="logo-title">TECH<span>ZONE</span></div></div>
+  <div class="logo-sub">ELECTRONICS SHOP MANAGER</div>
+  <div class="error-msg" id="error-msg"></div>
+  <div class="form-group">
+    <label>Email</label>
+    <input type="email" id="email" placeholder="আপনার ইমেইল" autocomplete="username">
+  </div>
+  <div class="form-group">
+    <label>Password</label>
+    <input type="password" id="password" placeholder="পাসওয়ার্ড" autocomplete="current-password">
+  </div>
+  <button class="login-btn" id="login-btn">লগইন করুন</button>
+  <div class="footer-note">SECURE ACCESS · OWNER / STAFF</div>
+</div>
+ 
+<script src="config.js"></script>
+<script>
+const sb = window.supabaseClient;
+ 
+// যদি আগে থেকেই লগইন থাকে, সরাসরি অ্যাপে পাঠিয়ে দাও
+(async () => {
+  const { data: { session } } = await sb.auth.getSession();
+  if (session) window.location.href = 'index.html';
+})();
+ 
+document.getElementById('login-btn').addEventListener('click', doLogin);
+document.getElementById('password').addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
+ 
+async function doLogin() {
+  const email = document.getElementById('email').value.trim();
+  const password = document.getElementById('password').value;
+  const errBox = document.getElementById('error-msg');
+  const btn = document.getElementById('login-btn');
+  errBox.style.display = 'none';
+ 
+  if (!email || !password) {
+    errBox.textContent = 'ইমেইল ও পাসওয়ার্ড দিন';
+    errBox.style.display = 'block';
+    return;
+  }
+ 
+  btn.disabled = true;
+  btn.textContent = 'যাচাই করা হচ্ছে...';
+ 
+  const { data, error } = await sb.auth.signInWithPassword({ email, password });
+ 
+  if (error) {
+    errBox.textContent = 'ভুল ইমেইল বা পাসওয়ার্ড';
+    errBox.style.display = 'block';
+    btn.disabled = false;
+    btn.textContent = 'লগইন করুন';
+    return;
+  }
+ 
+  window.location.href = 'index.html';
+}
+</script>
+</body>
+</html>
