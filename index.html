@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>TechZone — Electronics Shop Manager</title>
+<title>Sumaiya Electronics — Electronics Shop Manager</title>
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#04070f">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%2304070f'/%3E%3Ctext x='50' y='68' font-size='55' text-anchor='middle' fill='%2300d4ff'%3E%E2%AC%A1%3C/text%3E%3C/svg%3E">
@@ -496,6 +496,7 @@ select option{background:var(--bg3)}
         <div class="form-group"><label>পণ্যের নাম *</label><input type="text" id="p-name" placeholder="Samsung Smart TV"></div>
         <div class="form-group"><label>ব্র্যান্ড *</label><input type="text" id="p-brand" placeholder="Samsung"></div>
       </div>
+      <div class="form-group"><label>🎤 Voice Keywords (কমা দিয়ে আলাদা করুন)</label><input type="text" id="p-keywords" placeholder="যেমন: ফ্রিজ, রেফ্রিজারেটর, fridge"><div style="font-size:9px;color:var(--text3);margin-top:3px;font-family:'Share Tech Mono',monospace">💡 এই শব্দগুলোর যেকোনো একটা বললেই ভয়েসে এই পণ্য খুঁজে পাওয়া যাবে</div></div>
       <div class="form-row">
         <div class="form-group"><label>ক্যাটাগরি</label><select id="p-category"><option>টেলিভিশন</option><option>ফ্রিজ / AC</option><option>মোবাইল / ট্যাবলেট</option><option>ল্যাপটপ / কম্পিউটার</option><option>সাউন্ড সিস্টেম</option><option>হোম অ্যাপ্লায়েন্স</option><option>আনুষঙ্গিক</option><option>অন্যান্য</option></select></div>
         <div class="form-group"><label>Variant নাম</label><input type="text" id="p-variant-name" placeholder="যেমন: 128GB Black / 43 ইঞ্চি" value="স্ট্যান্ডার্ড"></div>
@@ -700,7 +701,7 @@ async function loadStaff(){
 function joinedVariants(){
   return state.variants.map(v => {
     const p = state.products.find(x => x.id === v.product_id) || {};
-    return {...v, productName: p.name || '—', brand: p.brand || '—', category: p.category || '—'};
+    return {...v, productName: p.name || '—', brand: p.brand || '—', category: p.category || '—', keywords: p.keywords || []};
   });
 }
 function todayStr(){ return new Date().toISOString().split('T')[0]; }
@@ -854,7 +855,7 @@ async function changeStock(variantId,delta){
  
 function openAddProduct(){
   document.getElementById('product-modal-title').textContent='নতুন পণ্য যোগ করুন';
-  ['product-id','variant-id','p-name','p-brand','p-serial','p-buy','p-sell','p-warranty'].forEach(id=>document.getElementById(id).value='');
+  ['product-id','variant-id','p-name','p-brand','p-serial','p-buy','p-sell','p-warranty','p-keywords'].forEach(id=>document.getElementById(id).value='');
   document.getElementById('p-variant-name').value='স্ট্যান্ডার্ড';
   document.getElementById('p-stock').value='0';document.getElementById('p-minstock').value='2';
   document.getElementById('p-category').value='টেলিভিশন';document.getElementById('p-unit').value='পিস';
@@ -866,6 +867,7 @@ function editProductVariant(variantId){
   document.getElementById('product-modal-title').textContent='পণ্য সম্পাদনা';
   document.getElementById('product-id').value=p.id;document.getElementById('variant-id').value=v.id;
   document.getElementById('p-name').value=p.name;document.getElementById('p-brand').value=p.brand;
+  document.getElementById('p-keywords').value=(p.keywords||[]).join(', ');
   document.getElementById('p-category').value=p.category;document.getElementById('p-variant-name').value=v.variant_name;
   document.getElementById('p-serial').value=v.serial||'';document.getElementById('p-buy').value=v.buy_price;
   document.getElementById('p-sell').value=v.sell_price;document.getElementById('p-stock').value=v.stock;
@@ -881,6 +883,7 @@ async function saveProduct(){
   if(!name||!brand){showToast('পণ্যের নাম ও ব্র্যান্ড দিন','error');return;}
   if(!sell){showToast('বিক্রয় মূল্য দিন','error');return;}
   const category=document.getElementById('p-category').value;
+  const keywords=document.getElementById('p-keywords').value.split(',').map(k=>k.trim().toLowerCase()).filter(Boolean);
   const variantData={
     variant_name:document.getElementById('p-variant-name').value.trim()||'স্ট্যান্ডার্ড',
     serial:document.getElementById('p-serial').value.trim(),
@@ -892,12 +895,12 @@ async function saveProduct(){
     unit:document.getElementById('p-unit').value
   };
   if(pid){
-    const{error:e1}=await sb.from('products').update({name,brand,category}).eq('id',pid);
+    const{error:e1}=await sb.from('products').update({name,brand,category,keywords}).eq('id',pid);
     const{error:e2}=await sb.from('product_variants').update(variantData).eq('id',vid);
     if(e1||e2){showToast('আপডেট ব্যর্থ','error');return;}
     showToast(name+' আপডেট হয়েছে','success');
   }else{
-    const{data:newProd,error:e1}=await sb.from('products').insert({shop_id:state.shopId,name,brand,category}).select().single();
+    const{data:newProd,error:e1}=await sb.from('products').insert({shop_id:state.shopId,name,brand,category,keywords}).select().single();
     if(e1){showToast('সংরক্ষণ ব্যর্থ: '+e1.message,'error');return;}
     const{error:e2}=await sb.from('product_variants').insert({...variantData,product_id:newProd.id,shop_id:state.shopId});
     if(e2){showToast('Variant সংরক্ষণ ব্যর্থ: '+e2.message,'error');return;}
@@ -1318,11 +1321,18 @@ let recognition=null,isListening=false,voiceTimeoutId=null,vcVariant=null,vcQty=
 function findByVoice(text){
   const t=text.toLowerCase().trim();
   const jv=joinedVariants();
-  const matches=jv.filter(v=>{
+  // ধাপ ১: Keyword-এর সাথে সরাসরি মিল আছে কিনা আগে খুঁজি (সবচেয়ে নির্ভরযোগ্য)
+  const keywordMatches=jv.filter(v=>{
+    const kws=(v.keywords||[]).map(k=>k.toLowerCase());
+    return kws.some(k=>t.includes(k)||k.includes(t)||t.split(/\s+/).some(w=>w.length>1&&k.includes(w)));
+  });
+  if(keywordMatches.length)return keywordMatches;
+  // ধাপ ২: keyword-এ না মিললে নাম/ব্র্যান্ড/ভ্যারিয়েন্ট দিয়ে fallback খোঁজা
+  const nameMatches=jv.filter(v=>{
     const hay=(v.productName+' '+v.brand+' '+v.variant_name).toLowerCase();
     return hay.includes(t)||t.split(/\s+/).some(w=>w.length>1&&hay.includes(w));
   });
-  return matches.length?matches:null;
+  return nameMatches.length?nameMatches:null;
 }
 function buildRec(){
   const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
@@ -1448,3 +1458,4 @@ if('serviceWorker' in navigator){window.addEventListener('load',()=>{navigator.s
 </script>
 </body>
 </html>
+ 
